@@ -20,6 +20,7 @@ public class SearchQueryBuilder {
     private String transformName;
     private String transformParams;
     private String transformParamsDelimiter;
+    private String[] uris;
 
     SearchQueryDefinition buildQuery(DatabaseClient client) {
         QueryDefinition queryDefinition = buildQueryDefinition(client);
@@ -82,8 +83,16 @@ public class SearchQueryBuilder {
         return this;
     }
 
+    public SearchQueryBuilder withUris(String... uris) {
+        this.uris = uris;
+        return this;
+    }
+
     private QueryDefinition buildQueryDefinition(DatabaseClient client) {
         final QueryManager queryManager = client.newQueryManager();
+        if (uris != null && uris.length > 0) {
+            return queryManager.newStructuredQueryBuilder().document(this.uris);
+        }
         if (query != null) {
             StringHandle queryHandle = new StringHandle(query);
             // v1/search assumes XML by default, so only need to set to JSON if the query is JSON.
@@ -99,10 +108,12 @@ public class SearchQueryBuilder {
             }
             return queryDefinition;
         }
+
         StringQueryDefinition queryDefinition = queryManager.newStringDefinition();
         if (this.stringQuery != null && stringQuery.length() > 0) {
             queryDefinition.setCriteria(this.stringQuery);
         }
+
         return queryDefinition;
     }
 

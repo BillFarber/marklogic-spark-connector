@@ -10,6 +10,7 @@ import org.apache.spark.SparkException;
 import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -19,6 +20,21 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ReadDocumentRowsTest extends AbstractIntegrationTest {
+
+    @Test
+    void readByUris() {
+        startRead()
+            .option(Options.READ_DOCUMENTS_URIS, "/author/author1.json\n" +
+                "/author/author12.json\n" +
+                "/author/author3.json")
+            .load()
+            .write().format(CONNECTOR_IDENTIFIER)
+            .option(Options.CLIENT_URI, makeClientUri())
+            .option(Options.WRITE_PERMISSIONS, DEFAULT_PERMISSIONS)
+            .option(Options.WRITE_URI_PREFIX, "/newline\nallowed")
+            .mode(SaveMode.Append)
+            .save();
+    }
 
     @Test
     void readByCollection() {
